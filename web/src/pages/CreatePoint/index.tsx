@@ -7,6 +7,7 @@ import logo from '../../assets/logo.svg';
 import './CreatePoint.css'
 import api from '../../services/api';
 import axios from 'axios';
+import Dropzone from '../../components/Dropzone'
 
 interface Item {
   id: number,
@@ -29,6 +30,7 @@ const CreatePoint = () => {
   const [cities, setCities] = useState<string[]>([]);
   const [selectedUf, setSelectedUf] = useState('0');
   const [selectedCity, setSelectedCity] = useState('0');
+  const [selectedFile, setSelectedFile] = useState<File>();
   const [selectedInitialPosition, setSelectedInitialPosition] = useState<[number, number]>([0, 0]);
   const [selectedPosition, setSelectedPosition] = useState<[number, number]>([0, 0]);
   const [formData, setFormData] = useState({
@@ -108,15 +110,18 @@ const CreatePoint = () => {
     const { name, email, whatsapp } = formData
     const [latitude, longitude] = selectedPosition
 
-    const data = {
-      name,
-      email,
-      whatsapp,
-      uf: selectedUf,
-      city: selectedCity,
-      latitude,
-      longitude,
-      items: selectedItems
+    const data = new FormData();
+    data.append('name', name)
+    data.append('email', email)
+    data.append('whatsapp', whatsapp)
+    data.append('uf', selectedUf)
+    data.append('city', selectedCity)
+    data.append('latitude', String(latitude))
+    data.append('longitude', String(longitude))
+    data.append('items', selectedItems.join(','))
+
+    if (selectedFile) {
+      data.append('image', selectedFile);
     }
 
     await api.post('points', data)
@@ -135,6 +140,8 @@ const CreatePoint = () => {
       </header>
       <form onSubmit={handleSubmit}>
         <h1>Cadastro do <br /> ponto de coleta</h1>
+
+        <Dropzone onFileUploaded={setSelectedFile} />
 
         <fieldset>
           <legend>
